@@ -1,0 +1,29 @@
+# Auto-detect text files
+* text=auto
+
+# Force LF for Python and config files
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+
+# Treat model weights as binary
+*.pt binary
+*.pth binary
+*.onnx binary
+
+# Treat media as binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.mp4 binary
+*.avi binary
+*.mov binary
+
+# Linguist overrides for documentation
+*.md linguist-documentation
