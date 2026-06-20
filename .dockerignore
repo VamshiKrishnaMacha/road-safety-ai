@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# GitHub
+.github
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed in container)
+docs/
+
+# Data (mount separately if needed)
+data/
+failed_cases/
+videos columbo/
+test model/
+
+# Large model files (mount separately if needed)
+# Comment out if models should be baked into image
+# *.pt
+
+# Streamlit local
+.streamlit/secrets.toml
+
+# Environment
+.env

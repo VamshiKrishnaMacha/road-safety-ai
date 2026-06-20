@@ -1,0 +1,477 @@
+/* ============================================================
+   ROAD MARKING AI — Premium Dark Glassmorphism Theme
+   ============================================================ */
+
+/* === RESET & BACKGROUND === */
+html, body, .stApp, [data-testid="stAppViewContainer"] {
+  background-color: #0a0e17 !important;
+  color: #e2e8f0 !important;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+}
+
+.stApp {
+  background: linear-gradient(135deg, #0a0e17 0%, #0d1525 50%, #0a0e17 100%) !important;
+  min-height: 100vh;
+}
+
+/* Main block container padding */
+[data-testid="stMainBlockContainer"] {
+  padding: 1rem 2rem !important;
+  max-width: 1400px !important;
+}
+
+/* === SIDEBAR === */
+.stSidebar {
+  background: rgba(10, 14, 23, 0.97) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.stSidebar > div {
+  background: transparent !important;
+  padding-top: 10px !important;
+}
+
+[data-testid="stSidebarNav"] {
+  background: transparent !important;
+}
+
+[data-testid="stSidebarNav"] > ul {
+  background: transparent !important;
+}
+
+[data-testid="stSidebarNav"] li > a {
+  color: #94a3b8 !important;
+  border-radius: 8px !important;
+  margin: 2px 8px !important;
+  padding: 8px 12px !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-testid="stSidebarNav"] li > a:hover {
+  background: rgba(0, 212, 170, 0.1) !important;
+  color: #00d4aa !important;
+}
+
+[data-testid="stSidebarNav"] [aria-selected="true"] > a {
+  background: rgba(0, 212, 170, 0.15) !important;
+  color: #00d4aa !important;
+  border-left: 3px solid #00d4aa !important;
+}
+
+/* Hide default Streamlit footer / manage app */
+[data-testid="stSidebarNavFooter"],
+.stDeployButton,
+[data-testid="stSidebarNav管理处"] {
+  display: none !important;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #0a0e17; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(0, 212, 170, 0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 212, 170, 0.5); }
+
+/* === GLASS CARD === */
+.glass-card {
+  background: rgba(20, 25, 40, 0.6) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.3s ease !important;
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 212, 170, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 212, 170, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+.glass-card-static {
+  background: rgba(20, 25, 40, 0.5) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* === METRIC OVERRIDE === */
+[data-testid="stMetricValue"] {
+  font-size: 2.4rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(90deg, #00d4aa, #7c3aed) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+[data-testid="stMetricLabel"] {
+  color: #94a3b8 !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+/* === PAGE HEADER === */
+.page-header {
+  margin-bottom: 30px;
+}
+
+.page-header h2 {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(90deg, #00d4aa, #7c3aed) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  margin-bottom: 8px !important;
+}
+
+.page-header-subtitle {
+  color: #64748b !important;
+  font-size: 1rem !important;
+  margin-top: 8px !important;
+}
+
+.page-header-underline {
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #00d4aa, #7c3aed);
+  border-radius: 2px;
+  margin-top: 12px;
+}
+
+/* === HERO === */
+.hero-section {
+  text-align: center;
+  padding: 80px 20px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #00d4aa, #7c3aed, #00d4aa);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 4s ease infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* === BUTTONS === */
+.stButton > button {
+  background: linear-gradient(135deg, #00d4aa, #059669) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  padding: 10px 24px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 15px rgba(0, 212, 170, 0.25) !important;
+}
+
+.stButton > button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 24px rgba(0, 212, 170, 0.4) !important;
+}
+
+.stButton > button:active {
+  transform: translateY(0) !important;
+}
+
+/* === SLIDER === */
+.stSlider > div > div > div:first-child {
+  background: linear-gradient(90deg, #00d4aa, #7c3aed) !important;
+}
+
+/* === TABS === */
+.stTabs [data-baseweb="tab-list"] {
+  gap: 8px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 8px 8px 0 0 !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  padding: 10px 20px !important;
+}
+
+.stTabs [aria-selected="true"] {
+  background: rgba(0, 212, 170, 0.15) !important;
+  border-bottom: 2px solid #00d4aa !important;
+  color: #e2e8f0 !important;
+}
+
+/* === DATAFRAME / TABLE === */
+[data-testid="stDataFrame"] {
+  background: rgba(20, 25, 40, 0.4) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  overflow: hidden !important;
+}
+
+[data-testid="stDataFrame"] th {
+  background: rgba(0, 212, 170, 0.1) !important;
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+[data-testid="stDataFrame"] td {
+  color: #94a3b8 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+/* === EXPANDER === */
+.streamlit-expanderHeader {
+  background: rgba(20, 25, 40, 0.5) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: #e2e8f0 !important;
+}
+
+/* === PULSE DOT === */
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 212, 170, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 212, 170, 0); }
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00d4aa;
+  animation: pulse-green 2s infinite;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+/* === DOWNLOAD BUTTONS === */
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
+  padding: 8px 16px !important;
+  color: #e2e8f0 !important;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.download-btn:hover {
+  background: rgba(0, 212, 170, 0.1) !important;
+  border-color: rgba(0, 212, 170, 0.3) !important;
+  color: #00d4aa !important;
+}
+
+/* === TECH STACK / FEATURE CARDS === */
+.tech-card, .feature-card {
+  background: rgba(20, 25, 40, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.tech-card:hover, .feature-card:hover {
+  border-color: rgba(0, 212, 170, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.tech-name, .feature-title {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.tech-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+  color: #00d4aa;
+}
+
+.feature-description {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* === FOOTER === */
+.footer {
+  text-align: center;
+  padding: 30px 20px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* === GRADIENT DIVIDER === */
+.gradient-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00d4aa, #7c3aed, transparent);
+  margin: 40px 0;
+  border-radius: 2px;
+}
+
+/* === STATUS BADGES === */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.status-operational {
+  background: rgba(0, 212, 170, 0.15);
+  color: #00d4aa;
+}
+
+.status-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.status-critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.status-info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+/* === MODEL CARD === */
+.model-card {
+  background: rgba(20, 25, 40, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.model-card:hover {
+  border-color: rgba(0, 212, 170, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.model-card.active {
+  border-color: rgba(0, 212, 170, 0.5) !important;
+  box-shadow: 0 0 20px rgba(0, 212, 170, 0.1), inset 0 0 20px rgba(0, 212, 170, 0.02) !important;
+}
+
+.model-name {
+  color: #e2e8f0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.model-meta {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .hero-title { font-size: 2.2rem !important; }
+  .hero-subtitle { font-size: 0.9rem !important; }
+  .glass-card { padding: 16px !important; border-radius: 12px !important; }
+  [data-testid="stMetricValue"] { font-size: 1.8rem !important; }
+  .page-header h2 { font-size: 1.5rem !important; }
+  .stButton > button { width: 100% !important; }
+}
+
+/* === FILE UPLOADER === */
+[data-testid="stFileUploader"] {
+  background: rgba(20, 25, 40, 0.5) !important;
+  border: 2px dashed rgba(0, 212, 170, 0.3) !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  transition: all 0.3s ease !important;
+}
+[data-testid="stFileUploader"]:hover {
+  border-color: rgba(0, 212, 170, 0.6) !important;
+  background: rgba(20, 25, 40, 0.7) !important;
+}
+[data-testid="stFileUploader"] > section > div > span {
+  color: #94a3b8 !important;
+}
+[data-testid="stFileUploader"] button {
+  background: linear-gradient(135deg, #00d4aa, #059669) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+}
+
+/* === SELECT BOX / DROPDOWN === */
+[data-testid="stSelectbox"] > div > div {
+  background: rgba(20, 25, 40, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+  color: #e2e8f0 !important;
+}
+[data-testid="stSelectbox"] > div > div:hover {
+  border-color: rgba(0, 212, 170, 0.3) !important;
+}
+
+/* === MULTISELECT === */
+[data-testid="stMultiSelect"] > div > div {
+  background: rgba(20, 25, 40, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+}
+
+/* === TOOLTIP === */
+[data-testid="stTooltipIcon"] {
+  color: #64748b !important;
+}
+
+/* === ALERTS === */
+[data-testid="stAlert"] {
+  background: rgba(20, 25, 40, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+}
+
+/* === SPINNER === */
+[data-testid="stSpinner"] {
+  color: #00d4aa !important;
+}
+
+/* === HIDE STREAMLIT UI ELEMENTS === */
+#MainMenu { visibility: hidden !important; }
+footer { visibility: hidden !important; }

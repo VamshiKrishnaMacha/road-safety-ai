@@ -1,181 +1,125 @@
-import streamlit as st
-from ultralytics import YOLO
-from PIL import Image
-import numpy as np
-import pandas as pd
-import cv2
-import tempfile
-from collections import Counter
+"""Road Safety Intelligence Platform — Entry Point."""
 import os
+import streamlit as st
+import sys
 
-# =========================================================
-# PAGE CONFIG
-# =========================================================
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+
+from src.components.layout import inject_custom_css, hero_section
+
+# Page configuration
 st.set_page_config(
-    page_title="AI Road Marking Detection",
-    page_icon="🚗",
-    layout="wide"
+    page_title="Road Safety Intelligence Platform",
+    page_icon="🛣️",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
 
-# =========================================================
-# HEADER
-# =========================================================
-st.title("🚗 AI Road Marking Detection Platform")
-st.markdown("### Detect road markings and road damage using YOLO models")
-st.info("📌 Upload only road-related images or videos you want to analyze.")
-st.markdown("---")
+# Inject custom CSS FIRST
+inject_custom_css()
 
-# =========================================================
-# ABOUT SECTION
-# =========================================================
-st.subheader("📑 About the App")
+# Custom sidebar header
+st.sidebar.markdown(
+    "<h1 style='text-align:center; margin-bottom:30px; font-size:1.5rem; font-weight:700; background:linear-gradient(90deg,#00d4aa,#7c3aed); -webkit-background-clip:text; -webkit-text-fill-color:transparent;'>ROAD MARKING AI</h1>",
+    unsafe_allow_html=True
+)
+st.sidebar.markdown(
+    "<p style='text-align:center; color:#64748b; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:30px;'>Infrastructure Intelligence</p>",
+    unsafe_allow_html=True
+)
+st.sidebar.markdown("<hr style='margin-bottom:30px;'>", unsafe_allow_html=True)
+
+# Hide default Streamlit elements via CSS
 st.markdown("""
-This platform uses multiple YOLO models for different detection tasks:
-
-- **YOLOv8 / YOLOv11 → Road Marking Detection**  
-  Classes: Lane lines, zebra crossings, stop lines, arrows, and other painted road markings.  
-
-- **YOLOv8_RDD (Cracks & Potholes)**  
-  Classes: Longitudinal cracks, Transverse cracks, Alligator cracks, Block cracks, Sealed cracks, and Potholes.  
-
-Together, these models help identify missing or degraded markings and also detect cracks/potholes to improve road safety.
-""")
-st.markdown("---")
-
-# =========================================================
-# MODEL SELECTION + UPLOAD
-# =========================================================
-st.subheader("⚙️ Select Model & Mode")
-col1, col2 = st.columns(2)
-
-model_map = {
-    "yolov8.pt": "YOLOv8 (Road Markings)",
-    "yolov11.pt": "YOLOv11 (Road Markings)",
-    "yolov8_RDD_cracks.pt": "YOLOv8_RDD (Cracks & Potholes)"
+<style>
+/* Hide the default "app" text from sidebar */
+[data-testid="stSidebarNav"]::before {
+    content: none !important;
 }
+/* Hide Streamlit branding */
+.stDeployButton {
+    display: none !important;
+}
+/* Hide "Manage app" */
+[data-testid="stSidebarNavFooter"] {
+    display: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
-available_models = [f for f in model_map.keys() if os.path.exists(f)]
-selected_file = st.selectbox("Choose YOLO Model:", available_models, format_func=lambda x: model_map[x])
+# Session state initialization
+if "tracker" not in st.session_state:
+    from src.core.tracker import InferenceTracker
+    st.session_state.tracker = InferenceTracker()
+
+if "active_model" not in st.session_state:
+    import os
+    model_files = sorted([f for f in os.listdir(os.path.dirname(os.path.abspath(__file__))) if f.endswith(".pt")])
+    st.session_state.active_model = model_files[0] if model_files else "yolov8.pt"
+
+if "settings" not in st.session_state:
+    st.session_state.settings = {"conf": 0.25, "iou": 0.45}
+
+# ---------------------------------------------------------------------------
+# CINEMATIC LANDING PAGE
+# ---------------------------------------------------------------------------
+
+
+hero_section("ROAD MARKING AI", "Real-Time Infrastructure Intelligence")
+
+# Animated metrics row
+st.markdown("<div style='margin:40px 0;'>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("<div class='glass-card' style='text-align:center;'>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; padding:24px 16px;'><div style='color:#94a3b8; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:12px;'>AI Detection</div><div style='font-size:2.5rem; font-weight:700; color:#00d4aa;'>YOLO</div><div style='font-size:0.85rem; color:#64748b; margin-top:8px;'>Real-time inference</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
-    mode = st.radio("Detection Mode:", ["Image", "Video"])
+    st.markdown("<div class='glass-card' style='text-align:center;'>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; padding:24px 16px;'><div style='color:#94a3b8; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:12px;'>Video Analytics</div><div style='font-size:2.5rem; font-weight:700; color:#00d4aa;'>Frame-level</div><div style='font-size:0.85rem; color:#64748b; margin-top:8px;'>Batch processing</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader(
-    "📤 Upload Image/Video", 
-    type=["jpg","jpeg","png","mp4","avi","mov"]
-)
+with col3:
+    st.markdown("<div class='glass-card' style='text-align:center;'>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; padding:24px 16px;'><div style='color:#94a3b8; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:12px;'>Model Support</div><div style='font-size:2.5rem; font-weight:700; color:#00d4aa;'>Multi-version</div><div style='font-size:0.85rem; color:#64748b; margin-top:8px;'>YOLOv5-v11</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-MODEL_PATH = selected_file
-if not os.path.exists(MODEL_PATH):
-    st.error(f"{MODEL_PATH} not found in project folder")
-    st.stop()
+st.markdown("</div>", unsafe_allow_html=True)
 
-model = YOLO(MODEL_PATH)
-st.success(f"✅ Model Loaded: {model_map[MODEL_PATH]}")
+# Feature grid
+st.markdown("---", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align:center; color:#e2e8f0; font-size:1.5rem; font-weight:600; margin:40px 0 30px;'>Platform Capabilities</h2>", unsafe_allow_html=True)
 
-# =========================================================
-# IMAGE DETECTION
-# =========================================================
-if mode == "Image" and uploaded_file:
-    image = Image.open(uploaded_file).convert("RGB")
-    image_np = np.array(image)
+feature_cols = st.columns(3)
 
-    with st.spinner("Running Detection..."):
-        results = model.predict(image_np, conf=0.25)
+features = [
+    ("AI Detection", "Advanced YOLO-based object detection for road markings, cracks, and infrastructure defects with real-time inference."),
+    ("Video Analytics", "Process video streams and recorded footage to extract actionable insights about road conditions and safety metrics."),
+    ("Real-Time Processing", "Sub-50ms inference times with optimized models delivering instantaneous results for time-critical applications."),
+    ("Model Management", "Seamlessly switch between multiple YOLO models. Compare results and track performance across different versions."),
+    ("Safety Analytics", "Identify hazardous road conditions, deteriorating markings, and infrastructure issues before they cause accidents."),
+    ("System Monitoring", "Track system health, model performance, and inference statistics in real-time with detailed dashboards."),
+]
 
-    annotated = results[0].plot()
+for idx, (title, desc) in enumerate(features):
+    with feature_cols[idx % 3]:
+        st.markdown(f"""
+        <div class="glass-card" style="padding:20px; margin-bottom:16px;">
+            <h3 style="color:#e2e8f0; font-size:1.1rem; margin-bottom:8px;">{title}</h3>
+            <p style="color:#94a3b8; font-size:0.85rem; line-height:1.5;">{desc}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Original Image")
-        st.image(image, width="stretch")
-    with col2:
-        st.subheader("Detection Output")
-        st.image(annotated, channels="BGR", width="stretch")
+# Gradient divider
+st.markdown("<div style='height:2px; background:linear-gradient(90deg, transparent, #00d4aa, #7c3aed, transparent); margin:40px 0; border-radius:2px;'></div>", unsafe_allow_html=True)
 
-    boxes = results[0].boxes
-    detected_classes = [model.names[int(box.cls[0])] for box in boxes]
-    counts = Counter(detected_classes)
-
-    st.subheader("🧠 Detection Summary")
-    if counts:
-        df = pd.DataFrame({"Class": list(counts.keys()), "Count": list(counts.values())})
-        st.dataframe(df, width="stretch")
-    else:
-        st.warning("No objects detected.")
-
-    failed_dir = "failed_cases"
-    os.makedirs(failed_dir, exist_ok=True)
-
-    fb_col1, fb_col2 = st.columns(2)
-    with fb_col1:
-        if st.button("✅ Predicted Correctly"):
-            st.success("Thanks for confirming! Logged as correct.")
-
-    with fb_col2:
-        if st.button("❌ Not Predicted"):
-            save_path = os.path.join(failed_dir, uploaded_file.name)
-            image.save(save_path)
-            st.error(f"Image saved to {save_path} for review.")
-
-# =========================================================
-# VIDEO DETECTION
-# =========================================================
-elif mode == "Video" and uploaded_file:
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    temp_file.write(uploaded_file.read())
-    temp_file.close()   # ✅ close before using
-
-    cap = cv2.VideoCapture(temp_file.name)
-    stframe = st.empty()
-
-    detected_classes = []
-    frame_count = 0
-
-    with st.spinner("Processing Video..."):
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            frame_count += 1
-            results = model.predict(frame, conf=0.25)
-            boxes = results[0].boxes
-            detected_classes.extend([model.names[int(box.cls[0])] for box in boxes])
-
-            annotated_frame = results[0].plot()
-            stframe.image(annotated_frame, channels="BGR", width="stretch")
-
-    cap.release()
-    os.remove(temp_file.name)   # ✅ safe delete
-
-    counts = Counter(detected_classes)
-
-    st.subheader("🎥 Video Analysis Summary")
-    st.write(f"**Frames Processed:** {frame_count}")
-    if counts:
-        df = pd.DataFrame({"Class": list(counts.keys()), "Count": list(counts.values())})
-        st.dataframe(df, width="stretch")
-    else:
-        st.warning("No objects detected.")
-
-    failed_dir = "failed_cases"
-    os.makedirs(failed_dir, exist_ok=True)
-
-    fb_col1, fb_col2 = st.columns(2)
-    with fb_col1:
-        if st.button("✅ Predicted Correctly"):
-            st.success("Thanks for confirming! Logged as correct.")
-
-    with fb_col2:
-        if st.button("❌ Not Predicted"):
-            save_path = os.path.join(failed_dir, uploaded_file.name)
-            with open(save_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            st.error(f"Video saved to {save_path} for review.")
-
-# =========================================================
-# FOOTER NOTE
-# =========================================================
-st.markdown("---")
-st.caption("Developed by Vamshi Krishna Macha | Powered by YOLO & Streamlit")
+# Footer
+st.markdown("""
+<div style="text-align:center; padding:30px 20px; color:#64748b; font-size:0.85rem;">
+    <p>Powered by YOLO | Road Safety Intelligence Platform</p>
+    <p style="margin-top:8px; font-size:0.75rem;">Built with Streamlit, Ultralytics, and OpenCV</p>
+</div>
+""", unsafe_allow_html=True)
