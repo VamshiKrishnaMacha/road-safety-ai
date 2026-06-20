@@ -7,6 +7,8 @@ sdk: streamlit
 sdk_version: "1.50.0"
 app_file: app.py
 pinned: false
+license: mit
+short_description: "AI-powered Road Marking, Crack and Pothole Detection System"
 ---
 
 # Road Safety Intelligence Platform
