@@ -38,6 +38,13 @@ MODEL_FILES = [
     "yolov8_RDD_cracks.pt",
 ]
 
+# Hugging Face Hub configuration for runtime model downloads
+# Set HF_MODEL_REPO to the ID of the Hub repo that hosts the excluded .pt files.
+HF_MODEL_REPO = os.environ.get(
+    "HF_MODEL_REPO",
+    "vamshikrishnamacha/road-safety-models",
+)
+
 # Defaults
 DEFAULTS = {
     "conf": 0.25,

@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 from src.components.layout import inject_custom_css, hero_section
 from src.utils.system import cpu_percent
+from src.utils.hf_hub import ensure_models
 
 
 # ---------------------------------------------------------------------------
@@ -117,6 +118,7 @@ if "tracker" not in st.session_state:
     st.session_state.tracker = InferenceTracker()
 
 if "active_model" not in st.session_state:
+    ensure_models()
     model_files = scan_models()
     st.session_state.active_model = model_files[0] if model_files else "yolov8.pt"
 

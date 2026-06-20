@@ -9,3 +9,4 @@ psutil>=5.9.0
 mlflow>=2.15.0
 protobuf>=4.21.0
 watchdog>=3.0.0
+huggingface-hub>=0.20.0
