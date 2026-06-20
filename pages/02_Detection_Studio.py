@@ -4,12 +4,10 @@ import sys
 import io
 import json
 import hashlib
-import base64
 from datetime import datetime
 from typing import Optional
 
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -37,8 +35,6 @@ def _ensure_session_defaults() -> None:
     if "tracker" not in st.session_state:
         from src.core.tracker import InferenceTracker
         st.session_state.tracker = InferenceTracker()
-    if "zoom_level" not in st.session_state:
-        st.session_state.zoom_level = 1.0
     if "dialog_target" not in st.session_state:
         st.session_state.dialog_target = None
     if "class_names" not in st.session_state:
@@ -60,18 +56,6 @@ def scan_models() -> list[str]:
     """Return all .pt model files in the project root."""
     root = get_project_root()
     return sorted([f for f in os.listdir(root) if f.endswith(".pt")])
-
-
-def image_to_base64(img: np.ndarray, is_bgr: bool = False) -> str:
-    """Convert numpy array to base64 PNG string."""
-    if is_bgr and len(img.shape) == 3 and img.shape[2] == 3:
-        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    else:
-        rgb = img
-    pil = Image.fromarray(rgb)
-    buf = io.BytesIO()
-    pil.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode()
 
 
 def format_file_size(size_bytes: int) -> str:
@@ -104,120 +88,6 @@ def save_feedback(
 
     with open(os.path.join(failed_dir, f"{base}.json"), "w") as f:
         json.dump({"model": model, "detections": detections}, f, indent=2)
-
-
-# ---------------------------------------------------------------------------
-# Before/After Slider HTML Builder
-# ---------------------------------------------------------------------------
-COMPARISON_HTML_TEMPLATE = """
-<style>
-.comparison-wrapper {{
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border-radius: 12px;
-  cursor: ew-resize;
-}}
-.comparison-wrapper img {{
-  display: block;
-  width: 100%;
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
-}}
-.comparison-overlay {{
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  overflow: hidden;
-  border-right: 3px solid #00d4aa;
-  z-index: 2;
-}}
-.comparison-overlay img {{
-  max-width: none;
-  width: auto;
-  height: 100%;
-}}
-.comparison-handle {{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 40px;
-  height: 40px;
-  margin-left: -20px;
-  margin-top: -20px;
-  background: #00d4aa;
-  border-radius: 50%;
-  z-index: 3;
-  cursor: ew-resize;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 15px rgba(0,212,170,0.4);
-}}
-.comparison-handle::after {{
-  content: "\u25C0 \u25B6";
-  color: #0a0e17;
-  font-size: 10px;
-  font-weight: bold;
-  letter-spacing: 1px;
-}}
-</style>
-<div id="compare" class="comparison-wrapper">
-  <img id="after-img" src="data:image/png;base64,{after_b64}" alt="Detection">
-  <div id="overlay" class="comparison-overlay">
-    <img id="before-img" src="data:image/png;base64,{before_b64}" alt="Original" style="width:{{container_width}}px;">
-  </div>
-  <div id="handle" class="comparison-handle"></div>
-</div>
-<script>
-(function() {{
-  const wrapper = document.getElementById('compare');
-  const overlay = document.getElementById('overlay');
-  const handle = document.getElementById('handle');
-  const beforeImg = document.getElementById('before-img');
-
-  function updateBeforeWidth() {{
-    beforeImg.style.width = wrapper.offsetWidth + 'px';
-  }}
-  updateBeforeWidth();
-  window.addEventListener('resize', updateBeforeWidth);
-
-  let isDragging = false;
-  function updateSlider(x) {{
-    const rect = wrapper.getBoundingClientRect();
-    let pct = ((x - rect.left) / rect.width) * 100;
-    pct = Math.min(Math.max(pct, 0), 100);
-    overlay.style.width = pct + '%';
-    handle.style.left = pct + '%';
-  }}
-  handle.addEventListener('mousedown', () => isDragging = true);
-  window.addEventListener('mouseup', () => isDragging = false);
-  window.addEventListener('mousemove', (e) => {{ if (isDragging) updateSlider(e.clientX); }});
-  handle.addEventListener('touchstart', (e) => {{ isDragging = true; e.preventDefault(); }});
-  window.addEventListener('touchend', () => isDragging = false);
-  window.addEventListener('touchmove', (e) => {{
-    if (isDragging && e.touches.length > 0) {{ e.preventDefault(); updateSlider(e.touches[0].clientX); }}
-  }});
-  wrapper.addEventListener('click', (e) => updateSlider(e.clientX));
-}})();
-</script>
-"""
-
-
-def build_comparison_component(
-    before_b64: str,
-    after_b64: str,
-    container_height: int,
-) -> None:
-    """Render the interactive before/after slider via streamlit components."""
-    html = COMPARISON_HTML_TEMPLATE.format(
-        after_b64=after_b64,
-        before_b64=before_b64,
-    )
-    components.html(html, height=container_height)
 
 
 # ---------------------------------------------------------------------------
@@ -337,7 +207,7 @@ if uploaded_file is not None:
     if result is not None and result.annotated_image is not None:
         annotated_image = result.annotated_image
 
-    # Ensure annotated image matches original dimensions for slider
+    # Ensure annotated image matches original dimensions
     if original_image is not None and annotated_image is not None:
         if original_image.shape[:2] != annotated_image.shape[:2]:
             annotated_image = cv2.resize(
@@ -346,122 +216,94 @@ if uploaded_file is not None:
             )
 
     # -------------------------------------------------------------------------
-    # Image Comparison Row (side-by-side)
+    # Side-by-Side Image Display
     # -------------------------------------------------------------------------
-    left_col, right_col = st.columns([0.5, 0.5])
+    img_col1, img_col2 = st.columns(2)
 
-    with left_col:
-        st.markdown("<p style='font-weight:600; margin-bottom:4px;'>Original</p>", unsafe_allow_html=True)
+    with img_col1:
+        st.markdown("#### Original Image")
         if original_image is not None:
             st.image(original_image, channels="RGB", use_container_width=True)
-            if st.button("Expand Original", use_container_width=True, key="btn_expand_original"):
+            if st.button("Expand Fullscreen", use_container_width=True, key="fs_orig"):
                 st.session_state.dialog_target = "original"
                 st.rerun()
+        else:
+            st.info("No original image available.")
 
-    with right_col:
-        st.markdown("<p style='font-weight:600; margin-bottom:4px;'>Detection</p>", unsafe_allow_html=True)
+    with img_col2:
+        st.markdown("#### Detection Result")
         if annotated_image is not None:
             st.image(annotated_image, channels="BGR", use_container_width=True)
-            if st.button("Expand Detection", use_container_width=True, key="btn_expand_detection"):
-                st.session_state.dialog_target = "detection"
-                st.rerun()
+            btn_fs, btn_dl = st.columns(2)
+            with btn_fs:
+                if st.button("Expand Fullscreen", use_container_width=True, key="fs_det"):
+                    st.session_state.dialog_target = "detection"
+                    st.rerun()
+            with btn_dl:
+                img_bytes = export_image_bytes(annotated_image, fmt="PNG")
+                st.download_button(
+                    "Download Detection Image",
+                    data=img_bytes,
+                    file_name="detection_output.png",
+                    mime="image/png",
+                    use_container_width=True,
+                    key="dl_det",
+                )
         elif result is not None and result.boxes:
             st.info("No annotated image available, but detections were found.")
         else:
             st.info("Run inference to see detection results.")
 
     # -------------------------------------------------------------------------
-    # Fullscreen Modals
+    # Fullscreen Dialogs
     # -------------------------------------------------------------------------
-    if st.session_state.dialog_target == "original" and original_image is not None:
+    if st.session_state.get("dialog_target") == "original" and original_image is not None:
         @st.dialog("Original Image")
-        def show_original_dialog():
-            st.image(original_image, use_container_width=True, caption="Original Image")
-            if st.button("Close", key="close_original"):
+        def show_original():
+            st.image(original_image, channels="RGB", use_container_width=True)
+            if st.button("Close", key="cls_orig"):
                 st.session_state.dialog_target = None
                 st.rerun()
-        show_original_dialog()
+        show_original()
 
-    if st.session_state.dialog_target == "detection" and original_image is not None:
+    if st.session_state.get("dialog_target") == "detection" and annotated_image is not None:
         @st.dialog("Detection Result")
-        def show_detection_dialog():
-            display_img = annotated_image if annotated_image is not None else original_image
-            channels = "BGR" if annotated_image is not None else "RGB"
-            st.image(display_img, use_container_width=True, caption="Detection Result", channels=channels)
-            if st.button("Close", key="close_detection"):
+        def show_detection():
+            st.image(annotated_image, channels="BGR", use_container_width=True)
+            if st.button("Close", key="cls_det"):
                 st.session_state.dialog_target = None
                 st.rerun()
-        show_detection_dialog()
+        show_detection()
 
     # -------------------------------------------------------------------------
-    # Interactive Before/After Comparison Slider
+    # Metadata Bar
     # -------------------------------------------------------------------------
-    if original_image is not None and annotated_image is not None:
-        st.markdown("<hr/>", unsafe_allow_html=True)
-        st.markdown("<p style='font-weight:600; margin-bottom:4px;'>Interactive Comparison</p>", unsafe_allow_html=True)
-
-        before_b64 = image_to_base64(original_image, is_bgr=False)
-        after_b64 = image_to_base64(annotated_image, is_bgr=True)
-
-        nominal_container_width = 700  # approximate full-width Streamlit container
-        slider_height = int(
-            nominal_container_width
-            * original_image.shape[0]
-            / original_image.shape[1]
-            * st.session_state.zoom_level
+    if result is not None:
+        st.markdown("---")
+        det_count = len(result.boxes)
+        unique_classes = len({b["cls"] for b in result.boxes}) if result.boxes else 0
+        avg_conf = (
+            sum(b["conf"] for b in result.boxes) / det_count
+            if det_count > 0 else 0.0
         )
-        slider_height = max(slider_height, 200)
+        inf_ms = result.inference_ms
 
-        build_comparison_component(before_b64, after_b64, slider_height)
-
-    # -------------------------------------------------------------------------
-    # Image Zoom Controls Row
-    # -------------------------------------------------------------------------
-    if original_image is not None and annotated_image is not None:
-        st.markdown("<p style='font-weight:600; margin-bottom:4px;'>Zoom Controls</p>", unsafe_allow_html=True)
-        z1, z2, z3, z4 = st.columns(4)
-        with z1:
-            if st.button("Zoom In", use_container_width=True, key="zoom_in"):
-                st.session_state.zoom_level = min(st.session_state.zoom_level * 1.25, 5.0)
-                st.rerun()
-        with z2:
-            if st.button("Zoom Out", use_container_width=True, key="zoom_out"):
-                st.session_state.zoom_level = max(st.session_state.zoom_level / 1.25, 0.25)
-                st.rerun()
-        with z3:
-            if st.button("Fit Width", use_container_width=True, key="zoom_fit"):
-                st.session_state.zoom_level = 1.0
-                st.rerun()
-        with z4:
-            if st.button("Reset View", use_container_width=True, key="zoom_reset"):
-                st.session_state.zoom_level = 1.0
-                st.rerun()
-
-    # -------------------------------------------------------------------------
-    # Image Metadata Bar
-    # -------------------------------------------------------------------------
-    if original_image is not None:
-        st.markdown("<hr/>", unsafe_allow_html=True)
-        st.markdown("<p style='font-weight:600; margin-bottom:4px;'>Image Metadata</p>", unsafe_allow_html=True)
-        m1, m2, m3, m4, m5 = st.columns(5)
+        m1, m2, m3, m4 = st.columns(4)
         with m1:
-            st.metric(
-                label="Resolution",
-                value=f"{original_image.shape[1]} x {original_image.shape[0]}",
-            )
+            st.metric(label="Detection Count", value=det_count)
         with m2:
-            st.metric(
-                label="File Size",
-                value=format_file_size(uploaded_file.size) if uploaded_file else "—",
-            )
+            st.metric(label="Classes Detected", value=unique_classes)
         with m3:
-            det_count = len(result.boxes) if result is not None else 0
-            st.metric(label="Detections", value=det_count)
+            st.metric(label="Avg Confidence", value=f"{avg_conf:.3f}")
         with m4:
-            inf_ms = f"{result.inference_ms:.1f}" if result is not None else "—"
-            st.metric(label="Inference Time", value=f"{inf_ms} ms")
-        with m5:
-            st.metric(label="Active Model", value=selected_model)
+            st.metric(label="Inference Time", value=f"{inf_ms:.1f} ms")
+
+        if getattr(result, "class_counts", None):
+            tags = [
+                f'<span style="background:rgba(0,212,170,0.15); color:#00d4aa; padding:3px 10px; border-radius:12px; font-size:0.75rem; margin-right:6px;">{cls} × {cnt}</span>'
+                for cls, cnt in result.class_counts.items()
+            ]
+            st.markdown("**Classes:** " + " ".join(tags), unsafe_allow_html=True)
 
     # -------------------------------------------------------------------------
     # Per-Detection Details Table
