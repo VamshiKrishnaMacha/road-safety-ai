@@ -3,6 +3,7 @@ import os
 from collections import deque
 
 import streamlit as st
+import base64
 import streamlit.components.v1 as components
 import sys
 
@@ -103,6 +104,42 @@ def _js_counter(label: str, target: int, suffix: str = "", duration: int = 2000,
     """
 
 
+def render_hero_video(video_path: str = "assets/videos/hero.mp4") -> None:
+    """Read the hero video as base64 and embed in an autoplay HTML5 video."""
+    if not os.path.exists(video_path):
+        st.warning("Hero video not found.")
+        return
+
+    with open(video_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+
+    video_html = f"""
+    <div style="position:relative; width:100%; border-radius:12px; overflow:hidden;">
+        <video autoplay loop muted playsinline
+               style="width:100%; height:auto; display:block;">
+            <source src="data:video/mp4;base64,{b64}" type="video/mp4">
+        </video>
+        <div style="position:absolute; top:0; left:0; right:0; bottom:0;
+                    background:linear-gradient(180deg,
+                        rgba(10,14,23,0.75) 0%,
+                        rgba(10,14,23,0.2) 30%,
+                        rgba(10,14,23,0.1) 50%,
+                        rgba(10,14,23,0.2) 70%,
+                        rgba(10,14,23,0.75) 100%);
+                    pointer-events:none;">
+        </div>
+        <div style="position:absolute; top:16px; left:24px;
+                    color:rgba(0,212,170,0.7); font-size:0.7rem;
+                    font-family:'Segoe UI',system-ui,sans-serif;
+                    letter-spacing:0.15em; text-transform:uppercase;
+                    pointer-events:none;">
+            Live Detection Feed
+        </div>
+    </div>
+    """
+    components.html(video_html, height=390)
+
+
 # ---------------------------------------------------------------------------
 # Session state (before any visible content)
 # ---------------------------------------------------------------------------
@@ -143,106 +180,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- Animated hero container (SVG layers + scan line + detection boxes) ---
-components.html(
-    """
-    <div style="position:relative; width:100%; height:500px;
-                overflow:hidden; border-radius:12px;">
-
-        <!-- Layer 1: Perspective Road Grid -->
-        <svg style="position:absolute; top:0; left:0; width:100%; height:100%;
-                    opacity:0.15; pointer-events:none; z-index:1;">
-            <line class="lane" x1="30%" y1="0" x2="45%" y2="100%" />
-            <line class="lane" x1="70%" y1="0" x2="55%" y2="100%" />
-            <line class="centerline" x1="50%" y1="0" x2="50%" y2="100%"
-                  stroke-dasharray="20,30" />
-            <line class="crossline" x1="0" y1="20%" x2="100%" y2="20%" />
-            <line class="crossline" x1="0" y1="40%" x2="100%" y2="40%" />
-            <line class="crossline" x1="0" y1="60%" x2="100%" y2="60%" />
-            <line class="crossline" x1="0" y1="80%" x2="100%" y2="80%" />
-            <style>
-                .lane {
-                    stroke: rgba(0,212,170,0.25);
-                    stroke-width: 2;
-                    animation: lane-flow 15s linear infinite;
-                }
-                .centerline {
-                    stroke: rgba(0,212,170,0.35);
-                    stroke-width: 2;
-                    animation: lane-flow 8s linear infinite;
-                }
-                .crossline {
-                    stroke: rgba(124,58,237,0.1);
-                    stroke-width: 1;
-                    animation: cross-flow 20s linear infinite;
-                }
-                @keyframes lane-flow {
-                    0% { stroke-dashoffset: 0; }
-                    100% { stroke-dashoffset: 200; }
-                }
-                @keyframes cross-flow {
-                    0% { stroke-dashoffset: 0; opacity: 0.3; }
-                    50% { opacity: 0.7; }
-                    100% { stroke-dashoffset: 400; opacity: 0.3; }
-                }
-            </style>
-        </svg>
-
-        <!-- Layer 2: Floating AI Detection Boxes -->
-        <div style="position:absolute; top:0; left:0; width:100%; height:100%;
-                    pointer-events:none; z-index:2;">
-            <style>
-                .det-box {
-                    position: absolute;
-                    border: 1px solid rgba(0,212,170,0.2);
-                    background: rgba(0,212,170,0.03);
-                    animation: det-pulse 6s ease-in-out infinite;
-                }
-                @keyframes det-pulse {
-                    0%, 100% { opacity: 0; transform: scale(0.8); }
-                    20%      { opacity: 1; transform: scale(1); }
-                    80%      { opacity: 1; transform: scale(1); }
-                }
-            </style>
-            <div class="det-box" style="top:30%; left:20%; width:60px; height:40px;
-                                          animation-delay:0s;"></div>
-            <div class="det-box" style="top:50%; left:70%; width:45px; height:35px;
-                                          animation-delay:2s;"></div>
-            <div class="det-box" style="top:70%; left:40%; width:50px; height:50px;
-                                          animation-delay:4s;"></div>
-            <div class="det-box" style="top:25%; left:60%; width:35px; height:25px;
-                                          animation-delay:1s;"></div>
-            <div class="det-box" style="top:60%; left:15%; width:55px; height:30px;
-                                          animation-delay:3s;"></div>
-            <div class="det-box" style="top:45%; left:45%; width:40px; height:40px;
-                                          animation-delay:5s;"></div>
-        </div>
-
-        <!-- Layer 3: Scanning Line -->
-        <div style="position:absolute; top:0; left:0; width:100%; height:100%;
-                    pointer-events:none; z-index:3;">
-            <style>
-                .scan-line {
-                    position: absolute;
-                    left: 0; width: 100%; height: 1px;
-                    background: linear-gradient(90deg, transparent, #00d4aa, transparent);
-                    box-shadow: 0 0 12px rgba(0,212,170,0.25);
-                    animation: scan-down 8s ease-in-out infinite;
-                }
-                @keyframes scan-down {
-                    0%   { top: 0; opacity: 0; }
-                    10%  { opacity: 1; }
-                    90%  { opacity: 1; }
-                    100% { top: 100%; opacity: 0; }
-                }
-            </style>
-            <div class="scan-line"></div>
-        </div>
-
-    </div>
-    """,
-    height=500,
-)
+# Hero video
+render_hero_video()
 
 # ---------------------------------------------------------------------------
 # 2. STATISTICS ROW (animated JS counters)
