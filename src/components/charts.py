@@ -39,7 +39,7 @@ def gauge_chart(value: float, title: str, max_val: float = 100, threshold: float
         gauge={
             "axis": {"range": [0, max_val], "tickcolor": DARK_FONT_COLOR},
             "bar": {"color": color, "thickness": 0.3},
-            "bg": DARK_PAPER_BG,
+            "bgcolor": DARK_PAPER_BG,
             "borderwidth": 0,
             "steps": [
                 {"range": [0, threshold * 0.6], "color": "rgba(0, 212, 170, 0.1)"},

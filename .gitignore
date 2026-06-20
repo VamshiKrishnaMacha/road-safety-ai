@@ -216,3 +216,25 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+.kimchi/
+
+# MLflow
+mlruns/
+mlflow.db
+mlflow_env/
+
+# Cache
+**/.cache/
+
+# Temp files
+*.tmp
+temp/
+=2.15.0
+
+# Data/logs
+data/logs/
+failed_cases/
+
+# Virtual environments
+.venv/
+venv/
