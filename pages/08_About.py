@@ -9,12 +9,12 @@ from src.components.layout import inject_custom_css, page_header
 
 inject_custom_css()
 
-page_header("About", "Road Marking AI Platform")
+page_header("About", "Road Safety Intelligence Platform")
 
 st.markdown("""
 <div style="max-width:800px; margin:0 auto 40px; text-align:center;">
     <p style="color:#e2e8f0; font-size:1.05rem; line-height:1.7;">
-        Road Marking AI is a production-grade platform for infrastructure analysis using
+        Road Safety Intelligence is a production-grade platform for infrastructure analysis using
         state-of-the-art YOLO computer vision models. Detect road markings, surface defects,
         and safety-critical infrastructure elements in real-time.
     </p>
