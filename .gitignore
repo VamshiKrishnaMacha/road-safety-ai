@@ -238,3 +238,20 @@ failed_cases/
 # Virtual environments
 .venv/
 venv/
+
+# =============================================================================
+# Hugging Face Spaces — Large file exclusions (>10MB limit)
+# =============================================================================
+# Large model weights (excluded from git to stay under HF Spaces size limits)
+yolov11.pt
+yolov8_RDD_cracks.pt
+# Keep small models: yolov8.pt (~6MB) remains tracked
+
+# Video files (often large; hero assets stay but user uploads / raw footage go here)
+*.mp4
+*.avi
+*.mov
+
+# Orphaned test submodule — too large for deployment
+test model/
+
